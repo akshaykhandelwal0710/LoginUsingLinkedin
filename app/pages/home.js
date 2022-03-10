@@ -2,51 +2,52 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Login from './index.js';
 
+var used = false;
+
 export default function Home(){
     const router = useRouter();
-    const { code } = router.query;
-    console.log(code);
+    var code;
 
     const [loggedIn, setLoggedIn] = useState(false);
     const [data, setData] = useState({});
 
     const getData = async () => {
-        const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
-            method: 'POST',
-            params: {
-                grant_type: 'authorization_code',
-                code: code,
-                client_id: '777wrznuz9eit6',
-                client_secret: 'u654qmO5YXQEXzN9',
-                redirect_uri: 'http://localhost:3000/home'
-            },
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
+        const response = await fetch('http://localhost:9000/fetchCode?code='+code, {
+            method: 'POST'
         });
 
         const dat = await response.json();
-        if (dat.error == undefined){
+        setData(dat);
+        if (dat['error'] == undefined){
+            console.log("here\n");
+            const resp = await fetch('http://localhost:9000/fetchInfo?token=' + dat.access_token, {
+                method: 'POST'
+            });
+            const d = await resp.json();
+            setData(d);
             setLoggedIn(true);
-            setData(dat);
         }
     };
 
-    if (!loggedIn){
-        getData();
-        console.log(data);
+    if (!loggedIn && !used){
+        if (router.query.code != undefined){
+            code = router.query.code;
+            used = true;
+            getData();
+            console.log(data);
+        }
     }
 
     if (loggedIn){
+        
         return (
-            <div> {JSON.stringify(data)} </div>
+            <div> Welcome {data.firstName.localized.en_US} {data.localizedLastName} </div>
         );
     }
     else{
         return (
             <div>
                 <Login></Login>
-                {JSON.stringify(data)}
             </div>
         )
     }
