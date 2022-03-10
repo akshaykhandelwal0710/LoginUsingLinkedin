@@ -41,7 +41,7 @@ export default function Home(){
     if (loggedIn){
         
         return (
-            <div> Welcome {data.firstName.localized.en_US} {data.localizedLastName} </div>
+            <div className = 'Welcome'> Welcome {data.firstName.localized.en_US} {data.localizedLastName} ! </div>
         );
     }
     else{
