@@ -11,6 +11,10 @@ body {
   cursor: pointer;
 }
 
+.loader{
+  margin-top: 10vh;
+}
+
 .Welcome{
   margin-top: 30vh;
   font-size: 40px;

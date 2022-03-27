@@ -1,54 +1,51 @@
-import { useRouter } from 'next/router';
 import { useState } from 'react';
-import Login from './index.js';
-
-var used = false;
+import loader from '../images/loader.gif';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
 
 export default function Home(){
-    const router = useRouter();
-    var code;
-
-    const [loggedIn, setLoggedIn] = useState(false);
     const [data, setData] = useState({});
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     const getData = async () => {
-        const response = await fetch('http://localhost:9000/fetchCode?code='+code, {
+        console.log(window.localStorage.getItem('token'));
+        const resp = await fetch('http://localhost:9000/fetchInfo?token=' + window.localStorage.getItem('token'), {
             method: 'POST'
         });
-
-        const dat = await response.json();
-        setData(dat);
-        if (dat['error'] == undefined){
-            console.log("here\n");
-            const resp = await fetch('http://localhost:9000/fetchInfo?token=' + dat.access_token, {
-                method: 'POST'
-            });
-            const d = await resp.json();
-            setData(d);
-            setLoggedIn(true);
+        const d = await resp.json();
+        console.log(d);
+        setData(d);
+        if (d.firstName == undefined){
+            window.localStorage.removeItem('token');
+            router.push('/');
+        }
+        else{
+            setLoading(false);
+            //console.log('yep');
         }
     };
 
-    if (!loggedIn && !used){
-        if (router.query.code != undefined){
-            code = router.query.code;
-            used = true;
-            getData();
-            console.log(data);
-        }
+    if (!loading && data.firstName == undefined){
+        setLoading(true);
+        getData();
+        return (
+            <div className='loader'>
+                <Image src = {loader} width = {300} height = {300}></Image>
+            </div>
+        );
     }
 
-    if (loggedIn){
-        
+    if (loading){
         return (
-            <div className = 'Welcome'> Welcome {data.firstName.localized.en_US} {data.localizedLastName} ! </div>
+            <div className='loader'>
+                <Image src = {loader} width = {300} height = {300}></Image>
+            </div>
         );
     }
     else{
         return (
-            <div>
-                <Login></Login>
-            </div>
-        )
+            <div className = 'Welcome'> Welcome {data.firstName.localized.en_US} {data.localizedLastName} ! </div>
+        );
     }
 }
